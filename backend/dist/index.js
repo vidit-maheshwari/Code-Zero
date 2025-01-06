@@ -63,10 +63,6 @@ app.post("/template", (req, res) => __awaiter(void 0, void 0, void 0, function* 
                     role: "user",
                     content: prompt,
                 },
-                // {
-                //   role: "system",
-                //   content: getSystemPrompt(prompt),
-                // },
                 {
                     role: "system",
                     content: "You are a highly intelligent assistant. Return only a single word based on the context: either 'node' or 'react'. Do not return anything extra.",
@@ -107,14 +103,19 @@ app.post("/chat", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     const messages = req.body.messages;
     try {
-        // Call the Groq API for chat completion
         const response = yield groq.chat.completions.create({
-            messages: messages,
-            model: "gemma2-9b-it", // Replace with your specific Groq model ID
+            messages: [
+                {
+                    role: "system",
+                    content: yield (0, prompts_1.getSystemPrompt)()
+                },
+                ...messages
+            ],
+            model: "gemma2-9b-it",
         });
         console.log(response);
         res.json({
-            response: ((_b = (_a = response.choices[0]) === null || _a === void 0 ? void 0 : _a.message) === null || _b === void 0 ? void 0 : _b.content) || "",
+            response: (_b = (_a = response.choices[0]) === null || _a === void 0 ? void 0 : _a.message) === null || _b === void 0 ? void 0 : _b.content
         });
     }
     catch (error) {

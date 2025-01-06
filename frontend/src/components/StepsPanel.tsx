@@ -1,79 +1,113 @@
-// import { Check, Circle } from 'lucide-react'
-
-// interface StepsPanelProps {
-//   currentStep: number
-// }
-
-// const steps = [
-//   'Analyze prompt',
-//   'Generate project structure',
-//   'Create component files',
-//   'Implement core functionality',
-//   'Add styling'
-// ]
-
-// export function StepsPanel({ currentStep }: StepsPanelProps) {
-//   return (
-//     <div>
-//       <h3 className="font-medium mb-4">Generation Steps</h3>
-//       <div className="space-y-3">
-//         {steps.map((step, index) => (
-//           <div
-//             key={step}
-//             className={`flex items-center gap-3 w-full p-2 rounded ${
-//               currentStep === index ? 'bg-zinc-800' : ''
-//             }`}
-//           >
-//             {index <= currentStep ? (
-//               <Check className="w-4 h-4 text-green-500" />
-//             ) : (
-//               <Circle className="w-4 h-4" />
-//             )}
-//             <span className={index <= currentStep ? 'text-white' : 'text-zinc-400'}>
-//               {step}
-//             </span>
-//           </div>
-//         ))}
-//       </div>
-//     </div>
-//   )
-// }
-
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { CheckCircle, Circle, Loader2, AlertCircle } from 'lucide-react';
 
 interface Step {
   id: number;
   title: string;
-  description?: string;
-  type: number;
-  status: string;
+  description: string;
+  type: StepType;
+  status: StepStatus;
+  path?: string;
+  code?: string;
+  error?: string;
 }
 
-interface StepsPanelProps {
-  steps: Step[];
-  currentStep: number;
+enum StepType {
+  CreateFile = 'CreateFile',
+  CreateFolder = 'CreateFolder',
+  RunScript = 'RunScript',
+  Error = 'Error'
 }
 
-export const StepsPanel: React.FC<StepsPanelProps> = ({ steps, currentStep }) => {
+enum StepStatus {
+  Pending = 'pending',
+  InProgress = 'in-progress',
+  Completed = 'completed',
+  Failed = 'failed'
+}
+
+const StepsPanel = ({ 
+  apiSteps = [], 
+  updateFileSystem 
+}: { 
+  apiSteps: any[];
+  updateFileSystem: (operations: string) => void;
+}) => {
+  const [steps, setSteps] = useState<Step[]>([]);
+  const [currentStep, setCurrentStep] = useState(0);
+
+  useEffect(() => {
+    if (apiSteps.length) {
+      const formattedSteps = apiSteps.map(step => ({
+        id: step.id,
+        title: step.title,
+        description: step.description || '',
+        type: step.type as StepType,
+        status: step.status as StepStatus,
+        path: step.path || '',
+        code: step.code || ''
+      }));
+      setSteps(formattedSteps);
+    }
+  }, [apiSteps]);
+
+  useEffect(() => {
+    if (steps.length > 0 && currentStep < steps.length) {
+      const step = steps[currentStep];
+      
+      // Process the current step
+      if (step.status === StepStatus.Pending) {
+        // Update step status to in-progress
+        const updatedSteps = [...steps];
+        updatedSteps[currentStep] = { ...step, status: StepStatus.InProgress };
+        setSteps(updatedSteps);
+
+        // Create file or folder based on step type
+        if (step.type === StepType.CreateFile && step.path) {
+          updateFileSystem(`CREATE ${step.path}\n${step.code || ''}`);
+        } else if (step.type === StepType.CreateFolder && step.path) {
+          updateFileSystem(`CREATE ${step.path}\n`);
+        }
+
+        // Mark step as completed and move to next step
+        setTimeout(() => {
+          const completedSteps = [...updatedSteps];
+          completedSteps[currentStep] = { ...step, status: StepStatus.Completed };
+          setSteps(completedSteps);
+          setCurrentStep(prev => prev + 1);
+        }, 500);
+      }
+    }
+  }, [steps, currentStep, updateFileSystem]);
+
+  const getStepIcon = (status: StepStatus, index: number) => {
+    if (status === StepStatus.Failed) return <AlertCircle className="w-5 h-5 text-red-500" />;
+    if (status === StepStatus.InProgress) return <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />;
+    if (status === StepStatus.Completed) return <CheckCircle className="w-5 h-5 text-green-500" />;
+    return <Circle className="w-5 h-5 text-gray-400" />;
+  };
+
   return (
-    <div className="steps-panel flex flex-col space-y-2 overflow-y-auto max-h-full">
-      {steps.map((step) => (
-        <div
-          key={step.id}
-          className={`p-3 border rounded ${
-            currentStep === step.id ? 'bg-blue-600 text-white' : 'bg-zinc-800 text-gray-300'
-          }`}
-        >
-          <h4 className="font-semibold text-sm">{step.title}</h4>
-          {step.description && (
-            <p className="text-xs mt-1 text-gray-400">{step.description}</p>
-          )}
-          <p className="text-xs mt-1">
-            Status: <span className="font-medium">{step.status}</span>
-          </p>
-        </div>
-      ))}
+    <div className="space-y-2">
+      <h2 className="text-xl font-semibold mb-4">Generation Steps</h2>
+      <div className="space-y-2">
+        {steps.map((step, index) => (
+          <div
+            key={step.id}
+            className={`flex items-start gap-3 p-2 rounded hover:bg-zinc-800 ${
+              step.status === StepStatus.Failed ? 'text-red-400' : ''
+            }`}
+          >
+            {getStepIcon(step.status, index)}
+            <div className="flex flex-col gap-1 flex-1">
+              <span className="text-sm">{step.title}</span>
+              {step.path && <span className="text-xs text-gray-500">{step.path}</span>}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
 
+export default StepsPanel;

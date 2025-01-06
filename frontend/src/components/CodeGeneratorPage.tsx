@@ -1,206 +1,13 @@
-
-
-// import { useState, useEffect } from 'react'
-// import { Resizable } from 're-resizable'
-// import { FileExplorer } from '@/components/FileExplorer'
-// import { StepsPanel } from '@/components/StepsPanel'
-// import { PromptInput } from '@/components/PromptInput'
-// import { CodeEditor } from '@/components/CodeEditor'
-// import { useFileSystem } from '@/hooks/useFileSystem'
-// import { useCodeGeneration } from '@/hooks/useCodeGeneration'
-// import { backend_url } from '../config'
-// import axios from 'axios'
-
-// interface CodeGeneratorPageProps {
-//   initialPrompt: string
-// }
-
-// export function CodeGeneratorPage({ initialPrompt }: CodeGeneratorPageProps) {
-//   const [prompt, setPrompt] = useState(initialPrompt)
-//   const { fileStructure, fileContents, selectedFile, setSelectedFile, updateFileSystem } = useFileSystem()
-//   const { generateCode, currentStep } = useCodeGeneration(updateFileSystem)
-
-//   const init = async (initialPrompt:string) => {
-//     const response = await axios.post(`${backend_url}/template`, {
-//       body: JSON.stringify({ prompt: initialPrompt.trim() })
-//     });
-//     const {prompts, uiPrompts} = response.data;
-
-//     const stepResponse = await axios.post(`${backend_url}/chat`, {
-//       messages:[...prompts, initialPrompt].map(content =>({
-//         role: "user",
-//         content: content
-//       }))
-//     });
-
-//   }
-
-//   useEffect(() => {
-//     init(initialPrompt);
-//     generateCode(prompt)
-//   }, [])
-
-//   const handleRegenerateCode = () => {
-//     generateCode(prompt)
-//   }
-
-//   return (
-//     <div className="flex h-screen bg-zinc-900 text-white">
-//       <Resizable
-//         defaultSize={{ width: 250, height: '100%' }}
-//         enable={{ right: true }}
-//         minWidth={200}
-//         maxWidth={400}
-//       >
-//         <div className="h-full border-r border-zinc-800 p-4 flex flex-col">
-//           {/* <StepsPanel currentStep={currentStep} /> */}
-//           <PromptInput
-//             prompt={prompt}
-//             setPrompt={setPrompt}
-//             onSubmit={handleRegenerateCode}
-//           />
-//         </div>
-//       </Resizable>
-      
-//       <div className="flex-1 flex">
-//         <Resizable
-//           defaultSize={{ width: '30%', height: '100%' }}
-//           enable={{ right: true }}
-//           minWidth={200}
-//           maxWidth="50%"
-//         >
-//           <div className="h-full border-r border-zinc-800 p-4 overflow-auto">
-//             <FileExplorer 
-//               files={fileStructure} 
-//               onSelectFile={setSelectedFile}
-//               selectedFile={selectedFile}
-//             />
-//           </div>
-//         </Resizable>
-
-//         <CodeEditor
-//           selectedFile={selectedFile}
-//           fileContents={fileContents}
-//         />
-//       </div>
-//     </div>
-//   )
-// }
-
-
-
-// import { useState, useEffect } from 'react';
-// import { Resizable } from 're-resizable';
-// import { FileExplorer } from '@/components/FileExplorer';
-// import { PromptInput } from '@/components/PromptInput';
-// import { CodeEditor } from '@/components/CodeEditor';
-// import { useFileSystem } from '@/hooks/useFileSystem';
-// import { useCodeGeneration } from '@/hooks/useCodeGeneration';
-// import { backend_url } from '../config';
-// import axios from 'axios';
-// import { parseXml } from '../components/steps';
-// import { StepsPanel } from './StepsPanel';
-
-
-
-// interface CodeGeneratorPageProps {
-//   initialPrompt: string;
-// }
-
-// export function CodeGeneratorPage({ initialPrompt }: CodeGeneratorPageProps) {
-//   const [prompt, setPrompt] = useState(initialPrompt);
-//   const { fileStructure, fileContents, selectedFile, setSelectedFile, updateFileSystem } = useFileSystem();
-//   const { generateCode, currentStep } = useCodeGeneration(updateFileSystem);
-
-//   const init = async (initialPrompt: string) => {
-//     console.log(initialPrompt);
-//     try {
-//       const response = await axios.post(`${backend_url}/template`, {
-//         prompt: initialPrompt.trim(),
-//       });
-
-//       const { prompts, uiPrompts } = response.data;
-
-//       const stepResponse = await axios.post(`${backend_url}/chat`, {
-//         messages: [...prompts, initialPrompt].map((content) => ({
-//           role: 'user',
-//           content: content,
-//         })),
-//       });
-//       const parsedXml = await parseXml(uiPrompts[0]);
-//       console.log(parsedXml);
-
-//     } catch (error: any) {
-//       console.error('Error initializing:', error.message || error);
-//     }
-//   };
-
-//   useEffect(() => {
-//     init(initialPrompt);
-//     generateCode(prompt);
-//   }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-//   const handleRegenerateCode = () => {
-//     generateCode(prompt);
-//   };
-
-//   return (
-//     <div className="flex h-screen bg-zinc-900 text-white">
-//       {/* Left Sidebar for Prompt Input */}
-//       <Resizable
-//         defaultSize={{ width: 250, height: '100%' }}
-//         enable={{ right: true }}
-//         minWidth={200}
-//         maxWidth={400}
-//       >
-//         <div className="h-full border-r border-zinc-800 p-4 flex flex-col">
-//           {parseXml(uiPrompts[0]).map((item, index) => (
-//               <StepsPanel key={index} currentStep={currentStep} />
-//           ))}
-//           <PromptInput
-//             prompt={prompt}
-//             setPrompt={setPrompt}
-//             onSubmit={handleRegenerateCode}
-//           />
-//         </div>
-//       </Resizable>
-
-//       {/* Main Content Area */}
-//       <div className="flex-1 flex">
-//         {/* File Explorer */}
-//         <Resizable
-//           defaultSize={{ width: '30%', height: '100%' }}
-//           enable={{ right: true }}
-//           minWidth={200}
-//           maxWidth="50%"
-//         >
-//           <div className="h-full border-r border-zinc-800 p-4 overflow-auto">
-//             <FileExplorer
-//               files={fileStructure}
-//               onSelectFile={setSelectedFile}
-//               selectedFile={selectedFile}
-//             />
-//           </div>
-//         </Resizable>
-
-//         {/* Code Editor */}
-//         <CodeEditor selectedFile={selectedFile} fileContents={fileContents} />
-//       </div>
-//     </div>
-//   );
-// }
-
 import { useState, useEffect } from 'react';
 import { Resizable } from 're-resizable';
 import { FileExplorer } from '@/components/FileExplorer';
 import { PromptInput } from '@/components/PromptInput';
 import { CodeEditor } from '@/components/CodeEditor';
-import { StepsPanel } from '@/components/StepsPanel';
-import { useFileSystem } from '@/hooks/useFileSystem';
-import { useCodeGeneration } from '@/hooks/useCodeGeneration';
-import { backend_url } from '../config';
+import StepsPanel from '@/components/StepsPanel';
+import { FileNode } from '@/types/FileSystem';
 import axios from 'axios';
 import { parseXml } from '../components/steps';
+import { backend_url } from '../config';
 
 interface CodeGeneratorPageProps {
   initialPrompt: string;
@@ -208,9 +15,71 @@ interface CodeGeneratorPageProps {
 
 export function CodeGeneratorPage({ initialPrompt }: CodeGeneratorPageProps) {
   const [prompt, setPrompt] = useState(initialPrompt);
-  const [steps, setSteps] = useState([]); // State to store parsed steps
-  const { fileStructure, fileContents, selectedFile, setSelectedFile, updateFileSystem } = useFileSystem();
-  const { generateCode, currentStep } = useCodeGeneration(updateFileSystem);
+  const [steps, setSteps] = useState([]);
+  const [fileStructure, setFileStructure] = useState<FileNode[]>([]);
+  const [fileContents, setFileContents] = useState<Record<string, string>>({});
+  const [selectedFile, setSelectedFile] = useState<string | null>(null);
+
+  const createFileStructure = (path: string, content: string = '') => {
+    const parts = path.split('/').filter(Boolean);
+    let currentPath = '';
+
+    const updateStructure = (structure: FileNode[], depth: number = 0): FileNode[] => {
+      if (depth === parts.length) return structure;
+
+      const part = parts[depth];
+      currentPath = depth === 0 ? part : `${currentPath}/${part}`;
+      const isFile = depth === parts.length - 1;
+
+      const existingNodeIndex = structure.findIndex(node => node.name === part);
+      
+      if (existingNodeIndex === -1) {
+        if (isFile) {
+          structure.push({
+            name: part,
+            type: 'file',
+            path: currentPath
+          });
+          setFileContents(prev => ({
+            ...prev,
+            [currentPath]: content
+          }));
+        } else {
+          structure.push({
+            name: part,
+            type: 'folder',
+            path: currentPath,
+            children: []
+          });
+        }
+      }
+
+      if (!isFile) {
+        const targetNode = existingNodeIndex === -1 
+          ? structure[structure.length - 1] 
+          : structure[existingNodeIndex];
+        if (targetNode.type === 'folder') {
+          targetNode.children = updateStructure(targetNode.children || [], depth + 1);
+        }
+      }
+
+      return structure;
+    };
+
+    setFileStructure(prevStructure => {
+      const newStructure = [...prevStructure];
+      return updateStructure(newStructure);
+    });
+  };
+
+  const updateFileSystem = (operation: string) => {
+    const [action, path, ...contentParts] = operation.split('\n');
+    const content = contentParts.join('\n');
+    
+    if (action === 'CREATE') {
+      createFileStructure(path, content);
+    }
+  };
 
   const init = async (initialPrompt: string) => {
     try {
@@ -219,8 +88,14 @@ export function CodeGeneratorPage({ initialPrompt }: CodeGeneratorPageProps) {
       });
 
       const { prompts, uiPrompts } = response.data;
-      const parsedSteps = parseXml(uiPrompts[0]); // Parse the steps from the response
-      setSteps(parsedSteps); // Store the steps in state
+      const parsedSteps = parseXml(uiPrompts[0]);
+      setSteps(parsedSteps);
+      
+      parsedSteps.forEach(step => {
+        if ((step.type === 'CreateFile' || step.type === 'CreateFolder') && step.path) {
+          createFileStructure(step.path, step.code || '');
+        }
+      });
     } catch (error: any) {
       console.error('Error initializing:', error.message || error);
     }
@@ -228,39 +103,39 @@ export function CodeGeneratorPage({ initialPrompt }: CodeGeneratorPageProps) {
 
   useEffect(() => {
     init(initialPrompt);
-    generateCode(prompt);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [initialPrompt]);
 
   const handleRegenerateCode = () => {
-    generateCode(prompt);
+    setFileStructure([]);
+    setFileContents({});
+    setSelectedFile(null);
+    init(prompt);
   };
 
   return (
     <div className="flex h-screen bg-zinc-900 text-white">
-      {/* Left Sidebar for Prompt Input and Steps */}
       <Resizable
-  defaultSize={{ width: 250, height: '100%' }}
-  enable={{ right: true }}
-  minWidth={200}
-  maxWidth={400}
->
-  <div className="h-full border-r border-zinc-800 p-4 flex flex-col">
-    {/* Steps Panel */}
-    <div className="flex-grow overflow-y-auto">
-      <StepsPanel steps={steps} currentStep={currentStep} />
-    </div>
-    {/* Prompt Input */}
-    <PromptInput
-      prompt={prompt}
-      setPrompt={setPrompt}
-      onSubmit={handleRegenerateCode}
-    />
-  </div>
-</Resizable>
+        defaultSize={{ width: 250, height: '100%' }}
+        enable={{ right: true }}
+        minWidth={200}
+        maxWidth={400}
+      >
+        <div className="h-full border-r border-zinc-800 p-4 flex flex-col">
+          <div className="flex-grow overflow-y-auto">
+            <StepsPanel 
+              apiSteps={steps}
+              updateFileSystem={updateFileSystem}
+            />
+          </div>
+          <PromptInput
+            prompt={prompt}
+            setPrompt={setPrompt}
+            onSubmit={handleRegenerateCode}
+          />
+        </div>
+      </Resizable>
 
-      {/* Main Content Area */}
       <div className="flex-1 flex">
-        {/* File Explorer */}
         <Resizable
           defaultSize={{ width: '30%', height: '100%' }}
           enable={{ right: true }}
@@ -276,8 +151,10 @@ export function CodeGeneratorPage({ initialPrompt }: CodeGeneratorPageProps) {
           </div>
         </Resizable>
 
-        {/* Code Editor */}
-        <CodeEditor selectedFile={selectedFile} fileContents={fileContents} />
+        <CodeEditor 
+          selectedFile={selectedFile} 
+          fileContents={fileContents}
+        />
       </div>
     </div>
   );

@@ -42,6 +42,13 @@ import { BASE_PROMPT, getSystemPrompt } from "./prompts";
 import { basePrompt as nodeBasePrompt } from "./defaults/node";
 import { basePrompt as reactBasePrompt } from "./defaults/react";
 import cors from "cors";
+import { Request, Response } from 'express';
+import {ChatMessage} from "../src/types";
+import { ChatCompletionMessageParam } from "groq-sdk/resources/chat/completions";
+
+
+
+
 
 // Initialize Groq with your API key
 const groq = new Groq({ apiKey: process.env.GROQ_API });
@@ -60,10 +67,6 @@ app.post("/template", async (req:any, res:any) => {
           role: "user",
           content: prompt,
         },
-        // {
-        //   role: "system",
-        //   content: getSystemPrompt(prompt),
-        // },
         {
           role: "system",
           content: "You are a highly intelligent assistant. Return only a single word based on the context: either 'node' or 'react'. Do not return anything extra.",
@@ -104,26 +107,38 @@ app.post("/template", async (req:any, res:any) => {
   }
 });
 
-app.post("/chat", async (req:any, res:any) => {
+
+
+
+app.post("/chat", async (req, res) => {
   const messages = req.body.messages;
 
   try {
-    // Call the Groq API for chat completion
     const response = await groq.chat.completions.create({
-      messages: messages,
-      model: "gemma2-9b-it", // Replace with your specific Groq model ID
+      messages: [
+        {
+          role: "system",
+          content: await getSystemPrompt()
+        },
+        ...messages
+      ],
+      model: "gemma2-9b-it",
     });
 
     console.log(response);
 
     res.json({
-      response: response.choices[0]?.message?.content || "",
+      response: response.choices[0]?.message?.content
     });
-  } catch (error:any) {
+    
+  } catch (error: any) {
     console.error('Error with Groq API:', error.response ? error.response.data : error.message);
     res.status(500).json({ message: "An error occurred with the Groq API" });
   }
 });
+
+
+
 
 app.listen(3000, () => {
   console.log('Server running on port 3000');

@@ -1,35 +1,26 @@
-import React, { useState } from 'react'
-import { ChevronRight, ChevronDown, Folder, File } from 'lucide-react'
-import { FileNode } from '@/types/FileSystem'
+// FileExplorer.tsx
+import React, { useState } from 'react';
+import { ChevronRight, ChevronDown, Folder, File } from 'lucide-react';
+import {  FileExplorerItemProps, FileExplorerProps } from '@/types/FileSystem';
 
-interface FileExplorerProps {
-  files: FileNode[]
-  onSelectFile: (path: string) => void
-  selectedFile: string | null
-}
 
-const FileExplorerItem: React.FC<{
-  node: FileNode
-  path: string
-  onSelectFile: (path: string) => void
-  selectedFile: string | null
-}> = ({ node, path, onSelectFile, selectedFile }) => {
-  const [isOpen, setIsOpen] = useState(false)
-  const fullPath = `${path}/${node.name}`
 
-  const toggleOpen = () => {
-    if (node.type === 'folder') {
-      setIsOpen(!isOpen)
-    }
-  }
+const FileExplorerItem: React.FC<FileExplorerItemProps> = ({ 
+  node, 
+  path, 
+  onSelectFile, 
+  selectedFile 
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const fullPath = `${path}/${node.name}`;
 
   const handleClick = () => {
     if (node.type === 'file') {
-      onSelectFile(fullPath.slice(1)) // Remove leading slash
+      onSelectFile(fullPath.slice(1));
     } else {
-      toggleOpen()
+      setIsOpen(!isOpen);
     }
-  }
+  };
 
   return (
     <div>
@@ -51,9 +42,9 @@ const FileExplorerItem: React.FC<{
         )}
         <span className="text-sm">{node.name}</span>
       </div>
-      {node.type === 'folder' && isOpen && (
+      {node.type === 'folder' && isOpen && node.children && (
         <div className="ml-4">
-          {node.children?.map((child) => (
+          {node.children.map((child) => (
             <FileExplorerItem
               key={child.name}
               node={child}
@@ -65,8 +56,8 @@ const FileExplorerItem: React.FC<{
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
 export function FileExplorer({ files, onSelectFile, selectedFile }: FileExplorerProps) {
   return (
@@ -84,6 +75,7 @@ export function FileExplorer({ files, onSelectFile, selectedFile }: FileExplorer
         ))}
       </div>
     </div>
-  )
+  );
 }
 
+// types/FileSystem.ts
